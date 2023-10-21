@@ -1,4 +1,4 @@
-const media = ({ argument }) => {
+export default ({ argument }) => {
   return new Promise(resolve => {
     if (!argument) {
       // eslint-disable-next-line no-console
@@ -14,5 +14,3 @@ const media = ({ argument }) => {
     }
   });
 };
-
-export default media;

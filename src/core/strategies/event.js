@@ -1,4 +1,4 @@
-const event = ({ component, argument }) => {
+export default ({ component, argument }) => {
   return new Promise(resolve => {
     if (argument) {
       // if there's an argument use that as a custom event name
@@ -19,5 +19,3 @@ const event = ({ component, argument }) => {
     }
   });
 };
-
-export default event;

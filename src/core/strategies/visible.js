@@ -1,4 +1,4 @@
-const visible = ({ component, argument }) => {
+export default ({ component, argument }) => {
   return new Promise(resolve => {
     // work out if a rootMargin has been specified, and if so take it from the requirement
     const rootMargin = argument || '0px 0px 0px 0px';
@@ -11,5 +11,3 @@ const visible = ({ component, argument }) => {
     observer.observe(component.el);
   });
 };
-
-export default visible;

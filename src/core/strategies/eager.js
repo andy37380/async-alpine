@@ -1,6 +1,4 @@
 // not really necessary but keeps the logic consistant
-const eager = () => {
+export default () => {
   return true;
 };
-
-export default eager;

@@ -22,13 +22,12 @@ __export(strategies_exports, {
 });
 
 // src/core/strategies/eager.js
-var eager = () => {
+var eager_default = () => {
   return true;
 };
-var eager_default = eager;
 
 // src/core/strategies/event.js
-var event = ({ component, argument }) => {
+var event_default = ({ component, argument }) => {
   return new Promise((resolve) => {
     if (argument) {
       window.addEventListener(argument, () => resolve(), { once: true });
@@ -43,10 +42,9 @@ var event = ({ component, argument }) => {
     }
   });
 };
-var event_default = event;
 
 // src/core/strategies/idle.js
-var idle = () => {
+var idle_default = () => {
   return new Promise((resolve) => {
     if ("requestIdleCallback" in window) {
       window.requestIdleCallback(resolve);
@@ -55,10 +53,9 @@ var idle = () => {
     }
   });
 };
-var idle_default = idle;
 
 // src/core/strategies/media.js
-var media = ({ argument }) => {
+var media_default = ({ argument }) => {
   return new Promise((resolve) => {
     if (!argument) {
       console.log("Async Alpine: media strategy requires a media query. Treating as 'eager'");
@@ -72,10 +69,9 @@ var media = ({ argument }) => {
     }
   });
 };
-var media_default = media;
 
 // src/core/strategies/visible.js
-var visible = ({ component, argument }) => {
+var visible_default = ({ component, argument }) => {
   return new Promise((resolve) => {
     const rootMargin = argument || "0px 0px 0px 0px";
     const observer = new IntersectionObserver((entries) => {
@@ -87,7 +83,6 @@ var visible = ({ component, argument }) => {
     observer.observe(component.el);
   });
 };
-var visible_default = visible;
 
 // src/core/requirement-parser.js
 function parseRequirements(expression) {
