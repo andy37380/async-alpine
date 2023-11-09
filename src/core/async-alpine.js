@@ -230,14 +230,20 @@ const AsyncAlpine = {
           // only process element nodes
           if (node.nodeType !== 1) continue;
 
-          // if the directly added node has ax-load then set it up
-          if (node.hasAttribute(`${this._options.prefix}${this._options.root}`)) {
+          // if the directly added node has ax-load does not have ax-ignore-mutation then set it up
+          if (node.hasAttribute(`${this._options.prefix}${this._options.root}`) && !node.hasAttribute(`${this._options.prefix}ignore-mutation`)) {
             this._mutationEl(node);
           }
 
           // check all descendants for ax-load
           const childComponents = node.querySelectorAll(`[${this._options.prefix}${this._options.root}]`);
-          childComponents.forEach(el => this._mutationEl(el));
+          childComponents.forEach(el => {
+            // if does not have ax-ignore-mutation then set it up
+            if(!el.hasAttribute(`${this._options.prefix}ignore-mutation`))
+            {
+              this._mutationEl(el);
+            }
+          });
         }
       }
     });
