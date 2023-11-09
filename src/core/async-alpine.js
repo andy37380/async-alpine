@@ -12,6 +12,7 @@ const AsyncAlpine = {
     alpinePrefix: 'x-',
     root: 'load',
     inline: 'load-src',
+    stores: 'stores',
     defaultStrategy: 'eager',
   },
 
@@ -123,12 +124,15 @@ const AsyncAlpine = {
 
     const name = this._parseName(xData);
     const strategy = component.getAttribute(`${this._options.prefix}${this._options.root}`) || this._options.defaultStrategy;
+    const storeNamesJoinWithComma = component.getAttribute(`${this._options.prefix}${this._options.stores}`) || '';
+    const storeNames = storeNamesJoinWithComma.split(',').filter(el => el);
 
     this._componentStrategy({
       name,
       strategy,
       el: component,
       id: component.id || this._index,
+      storeNames: storeNames,
     });
   },
 
@@ -142,6 +146,7 @@ const AsyncAlpine = {
   async _componentStrategy(component) {
     const requirements = parseRequirements(component.strategy);
 
+    await this._downloadStores(component.storeNames);
     await this._generateRequirements(component, requirements);
     await this._download(component.name);
     this._activate(component);
@@ -178,13 +183,30 @@ const AsyncAlpine = {
    * =================================
    */
   // check if the component has been downloaded, if not trigger download and register with Alpine
-  async _download(name) {
+  async _download(name, isStore) {
     if (name.startsWith(internalNamePrefix)) return;
     this._handleAlias(name);
     if (!this._data[name] || this._data[name].loaded) return;
     const module = await this._getModule(name);
-    this.Alpine.data(name, module);
+    if(isStore){
+      !this.Alpine.store(name) && this.Alpine.store(name, module);
+    }
+    else{
+      this.Alpine.data(name, module);
+    }
+    
     this._data[name].loaded = true;
+  },
+
+  /**
+   * =================================
+   * store download
+   * =================================
+   */
+  async _downloadStores(storeNames) {
+    for (let name of storeNames) {
+      await this._download(name, true);
+    }
   },
 
   // run the callback function to get the module and find the appropriate import
