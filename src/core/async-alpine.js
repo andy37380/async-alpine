@@ -13,6 +13,7 @@ const AsyncAlpine = {
     root: 'load',
     inline: 'load-src',
     defaultStrategy: 'eager',
+    alias: false,
   },
 
   // if we fall back to an alias when components aren't pre-registered
@@ -44,6 +45,7 @@ const AsyncAlpine = {
 
   // actually run stuff
   start() {
+    this.alias(this._options.alias);
     this._processInline();
     this._setupComponents();
     this._mutations();
