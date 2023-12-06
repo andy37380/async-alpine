@@ -104,6 +104,27 @@ const AsyncAlpine = {
     this.url(name, srcUrl);
   },
 
+  _findOutermostElementsWithAttribute(node, attributeName, output) {
+    if (!output) {
+      output = [];
+    }
+
+    let isFound = false;
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      if (node.hasAttribute(attributeName)) {
+        output.push(node);
+        isFound = true;
+      }
+    }
+
+    if (!isFound) {
+      for (let i = 0; i < node.childNodes.length; i++) {
+        this._findOutermostElementsWithAttribute(node.childNodes[i], attributeName, output);
+      }
+    }
+    return output;
+  },
+
   /**
    * =================================
    * set up components
@@ -111,9 +132,10 @@ const AsyncAlpine = {
    */
   // loop through elements with ax-load and set them up as components
   _setupComponents() {
-    const components = document.querySelectorAll(`[${this._options.prefix}${this._options.root}]`);
-    for (let component of components) {
-      this._setupComponent(component);
+    const elements = this._findOutermostElementsWithAttribute(document, `${this._options.prefix}${this._options.root}`);
+
+    for (let element of elements) {
+      this._setupComponent(element);
     }
   },
 
@@ -143,13 +165,36 @@ const AsyncAlpine = {
    * split strategy into unique requirements and download the
    * component when requirements have been met
    */
-  async _componentStrategy(component) {
-    const requirements = parseRequirements(component.strategy);
+  async _componentStrategy(outermostComponent) {
+    const nodeList = outermostComponent.el.querySelectorAll(`[${this._options.prefix}${this._options.root}]`);
+    const elements = [outermostComponent.el].concat(Array.from(nodeList));
 
-    await this._downloadStores(component.storeNames);
-    await this._generateRequirements(component, requirements);
-    await this._download(component.name);
-    this._activate(component);
+    for (let element of elements) {
+      const xData = element.getAttribute(`${this._options.alpinePrefix}data`);
+      element.setAttribute(`${this._options.alpinePrefix}ignore`, '');
+  
+      const name = this._parseName(xData);
+      const strategy = element.getAttribute(`${this._options.prefix}${this._options.root}`) || this._options.defaultStrategy;
+      const storeNamesJoinWithComma = element.getAttribute(`${this._options.prefix}${this._options.stores}`) || '';
+      const storeNames = storeNamesJoinWithComma.split(',').filter(el => el);
+
+      const component = {
+        name,
+        strategy,
+        el: element,
+        id: element.id || this._index,
+        storeNames: storeNames,
+      };
+
+      const requirements = parseRequirements(strategy);
+      await this._downloadStores(storeNames);
+      await this._generateRequirements(component, requirements);
+      await this._download(name);
+    }
+
+    for (let element of elements) {
+      this._activate(element);
+    }
   },
 
   _generateRequirements(component, obj) {
@@ -231,11 +276,11 @@ const AsyncAlpine = {
    * remove x-ignore attribute and the _x_ignore data property
    * them force Alpine to re-scan the tree
    */
-  _activate(component) {
-    component.el.removeAttribute(`${this._options.alpinePrefix}ignore`);
+  _activate(element) {
+    element.removeAttribute(`${this._options.alpinePrefix}ignore`);
     // eslint-disable-next-line camelcase
-    component.el._x_ignore = false;
-    this.Alpine.initTree(component.el);
+    element._x_ignore = false;
+    this.Alpine.initTree(element);
   },
 
   /**
